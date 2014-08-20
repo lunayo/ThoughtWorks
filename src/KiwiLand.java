@@ -10,12 +10,61 @@ import java.util.Queue;
 
 public class KiwiLand {
 	private int numberOfTowns = 5;
+	private int INF = 100000000;
 	private Map<Character, ArrayList<EdgePoint>> edges = new HashMap<>();
-	private PriorityQueue<EdgePoint> priorityQueue;
 	
 	public KiwiLand() {
 		initialiseEdges();
-		System.out.print(this.numberOfTrips('C', 'C', 3, 0));
+		System.out.print(this.shortestPath('A', 'C'));
+	}
+	
+	public int shortestPath(char start, char end) {
+		// initialise distance
+		Map<Character, Integer> distances = new HashMap<>();
+		distances.put(start, 0);
+		// initialise shortest path
+		PriorityQueue<EdgePoint> priorityQueue = new PriorityQueue<EdgePoint>(10, new Comparator<EdgePoint>() {
+			public int compare(EdgePoint point1, EdgePoint point2) {
+				if (point1.distance < point2.distance) {
+					return -1;
+				}
+				if (point1.distance > point2.distance) {
+					return 1;
+				}
+				return 0;
+			}
+		});
+		
+		// push initial 
+		priorityQueue.add(new EdgePoint(0, start));
+		while (!priorityQueue.isEmpty()) {
+			EdgePoint top = priorityQueue.remove();
+			int distance = top.distance;
+			char currNode = top.destination;
+			// avoid duplicate node
+			if (distance == distances.get(currNode)) {
+				for (EdgePoint edgePoint : edges.get(currNode)) {
+					
+					char destNode = edgePoint.destination;
+					int destDestination = edgePoint.distance;
+					// add the distance if not exists
+					if (!distances.containsKey(destNode)) {
+						distances.put(destNode, INF);
+					} 
+					
+					// update the total distance if it is lower than the previous added path
+					int travelDistance = (distances.get(currNode) + destDestination);
+					if (travelDistance < distances.get(destNode) ||
+							distances.get(destNode) == 0) {
+						distances.put(destNode, travelDistance);
+						// push the new node
+						priorityQueue.add(new EdgePoint(travelDistance, destNode));
+					}
+				}
+			}
+		}
+		
+		return distances.get(end);
 	}
 	
 	public int getDistance(char current, char destination) {
@@ -68,25 +117,6 @@ public class KiwiLand {
 		}
 		
 		return numOfTrips;
-	}
-	
-	public PriorityQueue<EdgePoint> getPriorityQueue() {
-		// Lazy loading
-		if (priorityQueue == null) {
-			priorityQueue = new PriorityQueue<EdgePoint>(10, new Comparator<EdgePoint>() {
-				public int compare(EdgePoint point1, EdgePoint point2) {
-					if (point1.distance < point2.distance) {
-						return -1;
-					}
-					if (point1.distance > point2.distance) {
-						return 1;
-					}
-					return 0;
-				}
-			});
-		}
-		
-		return priorityQueue;
 	}
 	
 	public void initialiseEdges() {

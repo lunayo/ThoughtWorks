@@ -1,6 +1,16 @@
 public class EdgePoint {
 	int distance;
 	char destination;
+	
+	public EdgePoint() {
+		
+	}
+	
+	public EdgePoint(int distance, char destination) {
+		this.distance = distance;
+		this.destination = destination;
+	}
+	
 	public int getDistance() {
 		return distance;
 	}
