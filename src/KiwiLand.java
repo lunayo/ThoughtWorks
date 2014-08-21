@@ -1,21 +1,21 @@
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Queue;
 
 
 
 public class KiwiLand {
-	private int numberOfTowns = 5;
 	private int INF = 100000000;
 	private Map<Character, ArrayList<EdgePoint>> edges = new HashMap<>();
 	
-	public KiwiLand() {
-		initialiseEdges();
-		System.out.print(this.shortestPath('A', 'C'));
+	public KiwiLand(String[] distances) {
+		initialiseEdges(distances);
+	}
+	
+	public String distanceToString(int distance) {
+		return (distance == -1) ? "NO SUCH ROUTE" : Integer.toString(distance);
 	}
 	
 	public int shortestPath(char start, char end) {
@@ -98,30 +98,58 @@ public class KiwiLand {
 		return distance;
 	}
 	
-	public int numberOfTrips(char current, char end, int maxStop, int currentLevel) {
-		
+	public int numberOfTrips(char current, char end, int maxStop, int currentLevel, Boolean isExact) {
+		// assuming there is no cycle trip
 		int numOfTrips = 0;
 		
 		if (currentLevel > maxStop) {
 			return 0;
 		}
-		if (current == end && currentLevel != 0) {
-			return 1;
+		if (isExact) {
+			if (current == end && currentLevel != 0 && 
+					currentLevel == maxStop) {
+				return 1;
+			}
+		} else {
+			if (current == end && currentLevel != 0) {
+				return 1;
+			}
 		}
+		
 		
 		// DFS the number of trips that less than maxstop
 		// get the list of destination
 		for (EdgePoint edgePoint : edges.get(current)) {
 			char destination = edgePoint.destination;
-			numOfTrips += this.numberOfTrips(destination, end, maxStop, currentLevel + 1);
+			numOfTrips += this.numberOfTrips(destination, end, maxStop, currentLevel + 1, isExact);
 		}
 		
 		return numOfTrips;
 	}
 	
-	public void initialiseEdges() {
-		String[] distances = {"AB5", "BC4", "CD8", "DC8", "DE6", "AD5", "CE2", "EB3", "AE7"};
+	public int numberOfRoutes(char current, char end, int maxDistance, int currentDistance) {
+		int numOfRoutes = 0;
 		
+		if (currentDistance >= maxDistance) {
+			return 0;
+		}
+		
+		
+		// DFS the number of routes
+		for (EdgePoint edgePoint : edges.get(current)) {
+			char destination = edgePoint.destination;
+			int distance = edgePoint.distance;
+			if (destination == end && currentDistance != 0 &&
+					currentDistance + distance < maxDistance) {
+				numOfRoutes++;
+			}
+			numOfRoutes += this.numberOfRoutes(destination, end, maxDistance, currentDistance + distance);
+		}
+		
+		return numOfRoutes;
+	}
+	
+	public void initialiseEdges(String[] distances) {		
 		for (String distance : distances) {
 			EdgePoint point = new EdgePoint();
 			char start = distance.charAt(0);
